@@ -1,0 +1,1065 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Obsession Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: #2d3748;
+            font-size: 2.5rem;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .settings-btn {
+            position: relative;
+            padding: 12px 24px;
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .settings-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .settings-dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 10px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            min-width: 250px;
+            z-index: 100;
+        }
+
+        .settings-dropdown.active {
+            display: block;
+        }
+
+        .settings-item {
+            padding: 12px 20px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            border-bottom: 1px solid #e2e8f0;
+            color: #4a5568;
+            font-weight: 500;
+        }
+
+        .settings-item:first-child {
+            border-radius: 10px 10px 0 0;
+        }
+
+        .settings-item:last-child {
+            border-radius: 0 0 10px 10px;
+            border-bottom: none;
+        }
+
+        .settings-item:hover {
+            background: #f7fafc;
+            color: #667eea;
+        }
+
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #718096;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #e2e8f0;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+
+        .problems-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            min-height: 400px;
+        }
+
+        .problem-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            cursor: move;
+            transition: all 0.3s ease;
+            border-left: 5px solid #667eea;
+        }
+
+        .problem-card.dragging {
+            opacity: 0.5;
+            transform: rotate(2deg);
+        }
+
+        .problem-card:hover {
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .problem-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .problem-number {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            margin-right: 10px;
+        }
+
+        .problem-title {
+            color: #2d3748;
+            font-size: 1.2rem;
+            font-weight: 600;
+            flex: 1;
+        }
+
+        .problem-status {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+        }
+
+        .status-not-started {
+            background: #fed7d7;
+            color: #c53030;
+        }
+
+        .status-in-progress {
+            background: #feebc8;
+            color: #c05621;
+        }
+
+        .status-completed {
+            background: #c6f6d5;
+            color: #276749;
+        }
+
+        .problem-description {
+            color: #4a5568;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .actions-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .actions-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .actions-title {
+            color: #4a5568;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .action-item {
+            background: #f7fafc;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .action-checkbox {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .action-text {
+            flex: 1;
+            color: #2d3748;
+        }
+
+        .action-owner {
+            padding: 5px 10px;
+            border: 1px solid #cbd5e0;
+            border-radius: 5px;
+            background: white;
+            color: #4a5568;
+            font-size: 0.9rem;
+            min-width: 150px;
+        }
+
+        .add-action-btn {
+            background: transparent;
+            border: 2px dashed #cbd5e0;
+            color: #718096;
+            padding: 10px;
+            border-radius: 10px;
+            width: 100%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .add-action-btn:hover {
+            border-color: #667eea;
+            color: #667eea;
+            background: rgba(102, 126, 234, 0.05);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            color: #2d3748;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            color: #4a5568;
+            font-weight: 600;
+        }
+
+        .form-input, .form-textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #cbd5e0;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .form-textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .problem-card {
+                padding: 15px;
+            }
+            
+            .header-top {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .settings-dropdown {
+                right: auto;
+                left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-top">
+                <h1>🎯 Customer Obsession Dashboard</h1>
+                <div style="position: relative;">
+                    <button class="settings-btn" id="settingsBtn">⚙️ Settings</button>
+                    <div class="settings-dropdown" id="settingsDropdown">
+                        <div class="settings-item" id="exportCSV">📥 Export to CSV</div>
+                        <div class="settings-item" id="importCSV">📤 Import CSV</div>
+                        <div class="settings-item" id="saveLocal">💾 Save Locally</div>
+                        <div class="settings-item" id="loadLocal">📂 Load from Local</div>
+                    </div>
+                    <input type="file" id="csvFile" accept=".csv">
+                </div>
+            </div>
+            
+            <div class="stats-container">
+                <div class="stat-card">
+                    <div class="stat-value" id="totalProblems">0</div>
+                    <div class="stat-label">Total Problems</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="completedCount">0</div>
+                    <div class="stat-label">Completed</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="inProgressCount">0</div>
+                    <div class="stat-label">In Progress</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="totalActions">0</div>
+                    <div class="stat-label">Total Actions</div>
+                </div>
+            </div>
+            
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressBar">0%</div>
+            </div>
+            
+            <div class="controls">
+                <button class="btn btn-primary" id="addProblemBtn">➕ Add Problem</button>
+            </div>
+        </div>
+        
+        <div class="problems-container" id="problemsContainer">
+            <!-- Problems will be dynamically inserted here -->
+        </div>
+    </div>
+
+    <!-- Modal for adding/editing problems -->
+    <div class="modal" id="problemModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Add New Problem</h2>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Problem Title</label>
+                <input type="text" class="form-input" id="problemTitleInput">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Problem Description</label>
+                <textarea class="form-textarea" id="problemDescriptionInput"></textarea>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancelModalBtn">Cancel</button>
+                <button class="btn btn-primary" id="saveProblemBtn">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize data with all 16 problems
+        let problems = [
+            {
+                id: 1,
+                title: "Software instability and performance issues",
+                description: "Customers face frequent stability problems, slow performance, and outages, impacting trust and adoption.",
+                status: "not-started",
+                priority: 1,
+                actions: [
+                    { text: "Implement proactive monitoring and automated alerts for performance degradation", completed: false, owner: "" },
+                    { text: "Prioritize stability and security fixes in the roadmap", completed: false, owner: "" },
+                    { text: "Establish a 'Zero Downtime' reliability goal with clear accountability", completed: false, owner: "" }
+                ]
+            },
+            {
+                id: 2,
+                title: "Poor communication and slow response during outages or major product issues",
+                description: "Customers are not informed quickly or clearly during incidents, leading to frustration.",
+                status: "not-started",
+                priority: 2,
+                actions: [
+                    { text: "Create an incident communication protocol (templates, channels, frequency)", completed: false, owner: "" },
+                    { text: "Establish a status page with real-time updates", completed: false, owner: "" },
+                    { text: "Assign a dedicated incident communications lead", completed: false, owner: "" }
+                ]
+            },
+            {
+                id: 3,
+                title: "Slow case resolution and inconsistent support quality",
+                description: "Support cases take too long to resolve, and quality varies across agents and teams.",
+                status: "not-started",
+                priority: 3,
+                actions: [
+                    { text: "Define and track resolution SLAs for all priority levels", completed: false, owner: "" },
+                    { text: "Implement quality reviews and coaching for support staff", completed: false, owner: "" },
+                    { text: "Leverage knowledge base and AI tools to speed troubleshooting", completed: false, owner: "" }
+                ]
+            },
+            {
+                id: 4,
+                title: "Product gaps requiring workarounds",
+                description: "Key product limitations force customers to rely on inefficient workarounds.",
+                status: "not-started",
+                priority: 4,
+                actions: [
+                    { text: "Maintain a prioritized 'Gap to Close' list in collaboration with Product", completed: false, owner: "" },
+                    { text: "Tie product planning to high-impact customer pain points", completed: false, owner: "" },
+                    { text: "Provide official, documented interim solutions", completed: false, owner: "" }
+                ]
+            },
+            {
+                id: 5,
+                title: "Lack of transparency on product roadmap and known issues",
+                description: "Customers are unaware of upcoming improvements or timelines for fixes.",
+                status: "not-started",
+                priority: 5,
+                actions: [
+                    { text: "Share a quarterly public product roadmap with timelines for major items", completed: false, owner: "" },
+                    { text: "Publish a regularly updated 'Known Issues' page", completed: false, owner: "" },
+                    { text: "Host customer webinars to share roadmap updates", completed: false, owner: "" }
+                ]
+            },
+            {
+                id: 6,
+                title: "Disorganized customer interactions due to multiple portals and tools",
+                description: "Customers must navigate multiple systems for support, communications, and learning materials.",
+                status: "not-started",
+                priority: 6,
+                actions: [
+                    { text: "Consolidate customer-facing portals into a single platform", completed: false, owner: "" },
+                    { text: "Standardize navigation, branding, and authentication across all customer systems", completed: false, owner: "" }
+                ]
+            },
+            {
+                id: 7,
+                title: "No unified approach to customer experience across departments",
+                description: "Departments operate in silos, creating fragmented customer experiences.",
+                status: "not-started",
+                priority: 7,
+                actions: [
+                    { text: "Define a company-wide 'Customer Obsession' charter", completed: false, owner: "" },
+                    { text: "Create cross-functional squads for key accounts and initiatives", completed: false, owner: "" },
+                    { text: "Align KPIs across departments to shared customer outcomes", completed: false, owner: "" }
+                ]
+            },
+            {
+                id: 8,
+                title: "Weak cross-functional collaboration and escalation process",
+                description: "Escalations are unclear, slow, and inconsistent across functions.",
+                status: "not-started",
+                priority: 8,
+                actions: [
+                    { text: "Document and socialize an escalation framework", completed: false, owner: "" },
+                    { text: "Define clear ownership at each stage", completed: false, owner: "" },
+                    { text: "Track escalation response time and resolution metrics", completed: false, owner: "" }
+                ]
+            },
+            {
+                id: 9,
+                title: "Absence of clear SLAs (internal and external)",
+                description: "Without SLAs, customer expectations and internal accountability are unclear.",
+                status: "not-started",
+                priority: 9,
+                actions: [
+                    { text: "Define SLAs for response and resolution times by case priority", completed: false, owner: "" },
+                    { text: "Establish internal operational SLAs to support customer commitments", completed: false, owner: "" },
+                    { text: "Publish SLAs to customers and track compliance", completed: false, owner: "" }
+                ]
+            },
+            {
+                id: 10,
+                title: "Inconsistent messaging and branding across touchpoints",
+                description: "Customers receive mixed messages from different teams.",
+                status: "not-started",
+                priority: 10,
+                actions: [
+                    { text: "Develop a central brand and messaging guide", completed: false, owner: "" },
+                    { text: "Train all customer-facing teams on consistent communication", completed: false, owner: "" },
+                    { text: "Audit and align all customer-facing materials", completed: false, owner: "" }
+                ]
+            },
+            {
+                id: 11,
+                title: "Inadequate tracking of customer interactions",
+                description: "Interactions are not consistently logged, preventing a full view of customer history.",
+                status: "not-started",
+                priority: 11,
+                actions: [
+                    { text: "Implement CRM policies requiring all customer touchpoints to be logged", completed: false, owner: "" },
+                    { text: "Use automation to capture and sync communications", completed: false, owner: "" },
+                    { text: "Provide teams with a single customer profile view", completed: false, owner: "" }
+                ]
+            },
+            {
+                id: 12,
+                title: "Limited focus on key performance and customer satisfaction metrics",
+                description: "Lack of consistent measurement and action on uptime, performance, and satisfaction.",
+                status: "not-started",
+                priority: 12,
+                actions: [
+                    { text: "Define core customer health metrics (e.g., NPS, uptime, time to resolution)", completed: false, owner: "" },
+                    { text: "Review metrics in executive meetings", completed: false, owner: "" },
+                    { text: "Set improvement targets and tie them to team goals", completed: false, owner: "" }
+                ]
+            },
+            {
+                id: 13,
+                title: "Internal process inefficiencies creating service roadblocks",
+                description: "Internal processes are slow, overly complex, or misaligned, delaying customer outcomes.",
+                status: "not-started",
+                priority: 13,
+                actions: [
+                    { text: "Map and streamline key processes impacting customers", completed: false, owner: "" },
+                    { text: "Introduce playbooks to ensure smooth handoffs", completed: false, owner: "" },
+                    { text: "Empower employees to bypass red tape for urgent issues", completed: false, owner: "" }
+                ]
+            },
+            {
+                id: 14,
+                title: "Ineffective release management",
+                description: "Poor planning and communication during releases cause customer disruption.",
+                status: "not-started",
+                priority: 14,
+                actions: [
+                    { text: "Establish a release calendar with customer impact notes", completed: false, owner: "" },
+                    { text: "Communicate changes in advance and provide readiness materials", completed: false, owner: "" },
+                    { text: "Implement post-release reviews to learn and improve", completed: false, owner: "" }
+                ]
+            },
+            {
+                id: 15,
+                title: "Gaps in employee training and customer empathy",
+                description: "Employees lack training in industry verticals, empathy, and ownership mindset.",
+                status: "not-started",
+                priority: 15,
+                actions: [
+                    { text: "Create onboarding and continuous training programs", completed: false, owner: "" },
+                    { text: "Run empathy and accountability workshops", completed: false, owner: "" },
+                    { text: "Develop role-specific skill certifications", completed: false, owner: "" }
+                ]
+            },
+            {
+                id: 16,
+                title: "Roadmap not clearly aligned to customer priorities",
+                description: "Product efforts are not visibly tied to usability, stability, and innovation priorities.",
+                status: "not-started",
+                priority: 16,
+                actions: [
+                    { text: "Anchor roadmap themes to the three customer priorities", completed: false, owner: "" },
+                    { text: "Publicly map roadmap items to these themes", completed: false, owner: "" },
+                    { text: "Review quarterly with customer councils", completed: false, owner: "" }
+                ]
+            }
+        ];
+
+        // Global functions that will be used by event handlers
+        window.updateStatus = function(id, status) {
+            const problem = problems.find(p => p.id === id);
+            if (problem) {
+                problem.status = status;
+                renderProblems();
+                updateStats();
+            }
+        };
+
+        window.toggleAction = function(problemId, actionIndex) {
+            const problem = problems.find(p => p.id === problemId);
+            if (problem && problem.actions[actionIndex]) {
+                problem.actions[actionIndex].completed = !problem.actions[actionIndex].completed;
+                updateStats();
+            }
+        };
+
+        window.updateOwner = function(problemId, actionIndex, owner) {
+            const problem = problems.find(p => p.id === problemId);
+            if (problem && problem.actions[actionIndex]) {
+                problem.actions[actionIndex].owner = owner;
+            }
+        };
+
+        window.addAction = function(problemId) {
+            const actionText = prompt("Enter new action:");
+            if (actionText) {
+                const problem = problems.find(p => p.id === problemId);
+                if (problem) {
+                    problem.actions.push({
+                        text: actionText,
+                        completed: false,
+                        owner: ""
+                    });
+                    renderProblems();
+                    updateStats();
+                }
+            }
+        };
+
+        // Render problems
+        function renderProblems() {
+            const container = document.getElementById('problemsContainer');
+            container.innerHTML = '';
+            
+            problems.sort((a, b) => a.priority - b.priority);
+            
+            problems.forEach(problem => {
+                const card = createProblemCard(problem);
+                container.appendChild(card);
+            });
+            
+            enableDragAndDrop();
+        }
+
+        // Create problem card element
+        function createProblemCard(problem) {
+            const card = document.createElement('div');
+            card.className = 'problem-card';
+            card.draggable = true;
+            card.dataset.id = problem.id;
+            
+            const statusClass = `status-${problem.status}`;
+            
+            card.innerHTML = `
+                <div class="problem-header">
+                    <div>
+                        <span class="problem-number">#${problem.priority}</span>
+                        <span class="problem-title">${problem.title}</span>
+                    </div>
+                    <select class="problem-status ${statusClass}" onchange="updateStatus(${problem.id}, this.value)">
+                        <option value="not-started" ${problem.status === 'not-started' ? 'selected' : ''}>Not Started</option>
+                        <option value="in-progress" ${problem.status === 'in-progress' ? 'selected' : ''}>In Progress</option>
+                        <option value="completed" ${problem.status === 'completed' ? 'selected' : ''}>Completed</option>
+                    </select>
+                </div>
+                <div class="problem-description">${problem.description}</div>
+                <div class="actions-section">
+                    <div class="actions-header">
+                        <span class="actions-title">Proposed Actions (${problem.actions.length})</span>
+                    </div>
+                    <div id="actions-${problem.id}">
+                        ${problem.actions.map((action, index) => `
+                            <div class="action-item">
+                                <input type="checkbox" class="action-checkbox" 
+                                    ${action.completed ? 'checked' : ''} 
+                                    onchange="toggleAction(${problem.id}, ${index})">
+                                <span class="action-text">${action.text}</span>
+                                <input type="text" class="action-owner" 
+                                    placeholder="Assign owner" 
+                                    value="${action.owner || ''}"
+                                    onchange="updateOwner(${problem.id}, ${index}, this.value)">
+                            </div>
+                        `).join('')}
+                    </div>
+                    <button class="add-action-btn" onclick="addAction(${problem.id})">+ Add Action</button>
+                </div>
+            `;
+            
+            return card;
+        }
+
+        // Enable drag and drop
+        function enableDragAndDrop() {
+            const cards = document.querySelectorAll('.problem-card');
+            const container = document.getElementById('problemsContainer');
+            
+            cards.forEach(card => {
+                card.addEventListener('dragstart', (e) => {
+                    e.dataTransfer.effectAllowed = 'move';
+                    e.dataTransfer.setData('text/html', e.target.innerHTML);
+                    e.target.classList.add('dragging');
+                });
+                
+                card.addEventListener('dragend', (e) => {
+                    e.target.classList.remove('dragging');
+                    updatePriorities();
+                });
+                
+                card.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    const dragging = document.querySelector('.dragging');
+                    const afterElement = getDragAfterElement(container, e.clientY);
+                    
+                    if (afterElement == null) {
+                        container.appendChild(dragging);
+                    } else {
+                        container.insertBefore(dragging, afterElement);
+                    }
+                });
+            });
+        }
+
+        function getDragAfterElement(container, y) {
+            const draggableElements = [...container.querySelectorAll('.problem-card:not(.dragging)')];
+            
+            return draggableElements.reduce((closest, child) => {
+                const box = child.getBoundingClientRect();
+                const offset = y - box.top - box.height / 2;
+                
+                if (offset < 0 && offset > closest.offset) {
+                    return { offset: offset, element: child };
+                } else {
+                    return closest;
+                }
+            }, { offset: Number.NEGATIVE_INFINITY }).element;
+        }
+
+        // Update priorities after drag and drop
+        function updatePriorities() {
+            const cards = document.querySelectorAll('.problem-card');
+            cards.forEach((card, index) => {
+                const id = parseInt(card.dataset.id);
+                const problem = problems.find(p => p.id === id);
+                if (problem) {
+                    problem.priority = index + 1;
+                }
+            });
+            renderProblems();
+            updateStats();
+        }
+
+        // Update statistics
+        function updateStats() {
+            const total = problems.length;
+            const completed = problems.filter(p => p.status === 'completed').length;
+            const inProgress = problems.filter(p => p.status === 'in-progress').length;
+            const totalActions = problems.reduce((sum, p) => sum + p.actions.length, 0);
+            
+            document.getElementById('totalProblems').textContent = total;
+            document.getElementById('completedCount').textContent = completed;
+            document.getElementById('inProgressCount').textContent = inProgress;
+            document.getElementById('totalActions').textContent = totalActions;
+            
+            const progressPercent = total > 0 ? Math.round((completed / total) * 100) : 0;
+            const progressBar = document.getElementById('progressBar');
+            progressBar.style.width = progressPercent + '%';
+            progressBar.textContent = progressPercent + '%';
+        }
+
+        // Export to CSV
+        function exportToCSV() {
+            let csv = 'Priority,Problem ID,Problem Title,Problem Description,Status,Action Text,Action Completed,Action Owner\n';
+            
+            problems.forEach(problem => {
+                if (problem.actions.length === 0) {
+                    csv += `${problem.priority},${problem.id},"${problem.title}","${problem.description}",${problem.status},"","",""\n`;
+                } else {
+                    problem.actions.forEach(action => {
+                        csv += `${problem.priority},${problem.id},"${problem.title}","${problem.description}",${problem.status},"${action.text}",${action.completed},"${action.owner}"\n`;
+                    });
+                }
+            });
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.setAttribute('hidden', '');
+            a.setAttribute('href', url);
+            a.setAttribute('download', 'customer_obsession_data.csv');
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            
+            document.getElementById('settingsDropdown').classList.remove('active');
+        }
+
+        // Parse CSV data
+        function parseCSV(csvText) {
+            const lines = csvText.split('\n');
+            problems = [];
+            const problemMap = new Map();
+            
+            for (let i = 1; i < lines.length; i++) {
+                if (lines[i].trim() === '') continue;
+                
+                const values = lines[i].match(/(".*?"|[^,]+)(?=\s*,|\s*$)/g);
+                if (!values) continue;
+                
+                const cleanValues = values.map(v => v.replace(/^"|"$/g, '').trim());
+                
+                const priority = parseInt(cleanValues[0]) || i;
+                const id = parseInt(cleanValues[1]) || i;
+                const title = cleanValues[2] || '';
+                const description = cleanValues[3] || '';
+                const status = cleanValues[4] || 'not-started';
+                const actionText = cleanValues[5] || '';
+                const actionCompleted = cleanValues[6] === 'true';
+                const actionOwner = cleanValues[7] || '';
+                
+                if (!problemMap.has(id)) {
+                    problemMap.set(id, {
+                        id: id,
+                        priority: priority,
+                        title: title,
+                        description: description,
+                        status: status,
+                        actions: []
+                    });
+                }
+                
+                if (actionText) {
+                    problemMap.get(id).actions.push({
+                        text: actionText,
+                        completed: actionCompleted,
+                        owner: actionOwner
+                    });
+                }
+            }
+            
+            problems = Array.from(problemMap.values());
+            renderProblems();
+            updateStats();
+            alert('CSV imported successfully!');
+        }
+
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            // Settings button
+            document.getElementById('settingsBtn').addEventListener('click', function() {
+                document.getElementById('settingsDropdown').classList.toggle('active');
+            });
+
+            // Export CSV
+            document.getElementById('exportCSV').addEventListener('click', exportToCSV);
+
+            // Import CSV
+            document.getElementById('importCSV').addEventListener('click', function() {
+                document.getElementById('csvFile').click();
+            });
+
+            document.getElementById('csvFile').addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        parseCSV(event.target.result);
+                    };
+                    reader.readAsText(file);
+                }
+                document.getElementById('settingsDropdown').classList.remove('active');
+            });
+
+            // Save to local storage
+            document.getElementById('saveLocal').addEventListener('click', function() {
+                localStorage.setItem('customerObsessionData', JSON.stringify(problems));
+                alert('Data saved to local storage!');
+                document.getElementById('settingsDropdown').classList.remove('active');
+            });
+
+            // Load from local storage
+            document.getElementById('loadLocal').addEventListener('click', function() {
+                const saved = localStorage.getItem('customerObsessionData');
+                if (saved) {
+                    problems = JSON.parse(saved);
+                    renderProblems();
+                    updateStats();
+                    alert('Data loaded from local storage!');
+                } else {
+                    alert('No saved data found in local storage.');
+                }
+                document.getElementById('settingsDropdown').classList.remove('active');
+            });
+
+            // Add problem button
+            document.getElementById('addProblemBtn').addEventListener('click', function() {
+                document.getElementById('problemModal').classList.add('active');
+            });
+
+            // Cancel modal button
+            document.getElementById('cancelModalBtn').addEventListener('click', function() {
+                document.getElementById('problemModal').classList.remove('active');
+                document.getElementById('problemTitleInput').value = '';
+                document.getElementById('problemDescriptionInput').value = '';
+            });
+
+            // Save problem button
+            document.getElementById('saveProblemBtn').addEventListener('click', function() {
+                const title = document.getElementById('problemTitleInput').value;
+                const description = document.getElementById('problemDescriptionInput').value;
+                
+                if (title && description) {
+                    const newId = Math.max(...problems.map(p => p.id), 0) + 1;
+                    const newPriority = problems.length + 1;
+                    
+                    problems.push({
+                        id: newId,
+                        priority: newPriority,
+                        title: title,
+                        description: description,
+                        status: 'not-started',
+                        actions: []
+                    });
+                    
+                    renderProblems();
+                    updateStats();
+                    document.getElementById('problemModal').classList.remove('active');
+                    document.getElementById('problemTitleInput').value = '';
+                    document.getElementById('problemDescriptionInput').value = '';
+                }
+            });
+
+            // Close modal when clicking outside
+            document.getElementById('problemModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.classList.remove('active');
+                    document.getElementById('problemTitleInput').value = '';
+                    document.getElementById('problemDescriptionInput').value = '';
+                }
+            });
+
+            // Close settings when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.settings-btn') && !e.target.closest('.settings-dropdown')) {
+                    document.getElementById('settingsDropdown').classList.remove('active');
+                }
+            });
+
+            // Initial render
+            renderProblems();
+            updateStats();
+        });
+    </script>
+</body>
+</html>
