@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Customer Obsession</title>
+    <title>Customer Obsession Dashboard</title>
     <style>
         * {
             margin: 0;
@@ -44,6 +44,7 @@
             display: flex;
             align-items: center;
             gap: 15px;
+            margin-bottom: 5px;
         }
 
         .settings-btn {
@@ -101,6 +102,13 @@
         .settings-item:hover {
             background: #f7fafc;
             color: #667eea;
+        }
+
+        .auto-save-info {
+            color: #48bb78;
+            font-size: 0.85rem;
+            font-weight: 500;
+            margin-top: 5px;
         }
 
         .stats-container {
@@ -320,6 +328,21 @@
             min-width: 150px;
         }
 
+        .action-remove {
+            background: #fed7d7;
+            color: #c53030;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+        }
+
+        .action-remove:hover {
+            background: #fc8181;
+        }
+
         .add-action-btn {
             background: transparent;
             border: 2px dashed #cbd5e0;
@@ -409,6 +432,25 @@
             display: none;
         }
 
+        .save-indicator {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #48bb78;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-weight: 600;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 1000;
+        }
+
+        .save-indicator.show {
+            opacity: 1;
+        }
+
         @media (max-width: 768px) {
             h1 {
                 font-size: 1.8rem;
@@ -434,14 +476,15 @@
     <div class="container">
         <div class="header">
             <div class="header-top">
-                <h1>🎯 Customer Obsession Dashboard</h1>
+                <div>
+                    <h1>🎯 Customer Obsession Dashboard</h1>
+                    <div class="auto-save-info">✓ All changes are automatically saved</div>
+                </div>
                 <div style="position: relative;">
                     <button class="settings-btn" id="settingsBtn">⚙️ Settings</button>
                     <div class="settings-dropdown" id="settingsDropdown">
                         <div class="settings-item" id="exportCSV">📥 Export to CSV</div>
                         <div class="settings-item" id="importCSV">📤 Import CSV</div>
-                        <div class="settings-item" id="saveLocal">💾 Save Locally</div>
-                        <div class="settings-item" id="loadLocal">📂 Load from Local</div>
                     </div>
                     <input type="file" id="csvFile" accept=".csv">
                 </div>
@@ -500,6 +543,9 @@
             </div>
         </div>
     </div>
+
+    <!-- Save indicator -->
+    <div class="save-indicator" id="saveIndicator">✓ Auto-saved</div>
 
     <script>
         // Initialize data with all 16 problems
@@ -697,6 +743,31 @@
             }
         ];
 
+        // Auto-save function
+        function autoSave() {
+            localStorage.setItem('customerObsessionData', JSON.stringify(problems));
+            
+            // Show save indicator
+            const indicator = document.getElementById('saveIndicator');
+            indicator.classList.add('show');
+            setTimeout(() => {
+                indicator.classList.remove('show');
+            }, 2000);
+        }
+
+        // Auto-load function
+        function autoLoad() {
+            const saved = localStorage.getItem('customerObsessionData');
+            if (saved) {
+                try {
+                    problems = JSON.parse(saved);
+                    console.log('Data auto-loaded from local storage');
+                } catch (e) {
+                    console.log('Using default data');
+                }
+            }
+        }
+
         // Global functions that will be used by event handlers
         window.updateStatus = function(id, status) {
             const problem = problems.find(p => p.id === id);
@@ -704,6 +775,7 @@
                 problem.status = status;
                 renderProblems();
                 updateStats();
+                autoSave(); // Auto-save after change
             }
         };
 
@@ -712,6 +784,7 @@
             if (problem && problem.actions[actionIndex]) {
                 problem.actions[actionIndex].completed = !problem.actions[actionIndex].completed;
                 updateStats();
+                autoSave(); // Auto-save after change
             }
         };
 
@@ -719,6 +792,7 @@
             const problem = problems.find(p => p.id === problemId);
             if (problem && problem.actions[actionIndex]) {
                 problem.actions[actionIndex].owner = owner;
+                autoSave(); // Auto-save after change
             }
         };
 
@@ -734,6 +808,19 @@
                     });
                     renderProblems();
                     updateStats();
+                    autoSave(); // Auto-save after change
+                }
+            }
+        };
+
+        window.removeAction = function(problemId, actionIndex) {
+            const problem = problems.find(p => p.id === problemId);
+            if (problem && problem.actions[actionIndex]) {
+                if (confirm('Are you sure you want to remove this action?')) {
+                    problem.actions.splice(actionIndex, 1);
+                    renderProblems();
+                    updateStats();
+                    autoSave(); // Auto-save after removing action
                 }
             }
         };
@@ -790,6 +877,7 @@
                                     placeholder="Assign owner" 
                                     value="${action.owner || ''}"
                                     onchange="updateOwner(${problem.id}, ${index}, this.value)">
+                                <button class="action-remove" onclick="removeAction(${problem.id}, ${index})">Remove</button>
                             </div>
                         `).join('')}
                     </div>
@@ -858,6 +946,7 @@
             });
             renderProblems();
             updateStats();
+            autoSave(); // Auto-save after reordering
         }
 
         // Update statistics
@@ -951,11 +1040,15 @@
             problems = Array.from(problemMap.values());
             renderProblems();
             updateStats();
+            autoSave(); // Auto-save after importing
             alert('CSV imported successfully!');
         }
 
         // Event listeners
         document.addEventListener('DOMContentLoaded', function() {
+            // Auto-load data on page load
+            autoLoad();
+            
             // Settings button
             document.getElementById('settingsBtn').addEventListener('click', function() {
                 document.getElementById('settingsDropdown').classList.toggle('active');
@@ -977,27 +1070,6 @@
                         parseCSV(event.target.result);
                     };
                     reader.readAsText(file);
-                }
-                document.getElementById('settingsDropdown').classList.remove('active');
-            });
-
-            // Save to local storage
-            document.getElementById('saveLocal').addEventListener('click', function() {
-                localStorage.setItem('customerObsessionData', JSON.stringify(problems));
-                alert('Data saved to local storage!');
-                document.getElementById('settingsDropdown').classList.remove('active');
-            });
-
-            // Load from local storage
-            document.getElementById('loadLocal').addEventListener('click', function() {
-                const saved = localStorage.getItem('customerObsessionData');
-                if (saved) {
-                    problems = JSON.parse(saved);
-                    renderProblems();
-                    updateStats();
-                    alert('Data loaded from local storage!');
-                } else {
-                    alert('No saved data found in local storage.');
                 }
                 document.getElementById('settingsDropdown').classList.remove('active');
             });
@@ -1034,6 +1106,7 @@
                     
                     renderProblems();
                     updateStats();
+                    autoSave(); // Auto-save after adding new problem
                     document.getElementById('problemModal').classList.remove('active');
                     document.getElementById('problemTitleInput').value = '';
                     document.getElementById('problemDescriptionInput').value = '';
